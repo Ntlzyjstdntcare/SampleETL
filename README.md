@@ -41,6 +41,10 @@ tables.
 ### Running Report
 Navigate to the root of the project and run `python ./ais_report.py`.
 
+### Running Tests
+Writing tests for Spark Dataframe equality involves a time consuming process of setting up the schema for the 'expected result'. I ran
+out of time to do this so the tests will fail. The few that are included are included to demonstrate what the tests would look like.
+
 ## Sample Report Output
 You should see something like the following (this output shows summary for data in one row)
 
