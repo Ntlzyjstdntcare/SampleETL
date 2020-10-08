@@ -67,26 +67,6 @@ object ETL {
       case Failure(exception) => println(s"Problem moving AIS data " +
         s"and/or generating summary data: $exception"); logger.error(exception)
     }
-
-//    //I should build up the collection and save it all in one go
-//    //I should get the params from conf
-//    //There must be a (much) better way to do this
-//    def iterateOverColumnsAndWrite(df: DataFrame): Try[Unit] = {
-//      Try{
-//        df.columns.take(1).foreach { column =>
-//          val duplicatesCount: DataFrame = counters.countDuplicates(column, df)
-//          writers.writeDfToMongo("duplicates_count", "append", duplicatesCount)
-//
-//          val nullsCount: Long = counters.countNullValues(column, df)
-//          val nullsCountRdd: RDD[Document] = utils.convertToRddDocument("nulls_count", nullsCount: Long)
-//
-//          writers.writeRddToMongo(nullsCountRdd, column)
-//
-//          val mostCommonValue: DataFrame = counters.findMostCommonValue(column, df)
-//          writers.writeDfToMongo("most_common_value", "append", mostCommonValue)
-//        }
-//      }
-//    }
   }
 
 }
