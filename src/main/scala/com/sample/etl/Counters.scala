@@ -7,8 +7,6 @@ class Counters(spark: SparkSession) {
 
   import spark.implicits._
 
-  val methods = List()
-
   def countDuplicates(column: String, sourceDf: DataFrame): DataFrame = {
     sourceDf.groupBy(col(column))
       .count()
