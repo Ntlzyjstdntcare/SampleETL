@@ -26,6 +26,26 @@ object ETL {
     val readers = new Readers(spark)
     val utils = new Utils(spark.sparkContext)
 
+    //I should build up the collection and save it all in one go
+    //I should get the params from conf
+    //There must be a (much) better way to do this
+    def iterateOverColumnsAndWrite(df: DataFrame): Try[Unit] = {
+      Try{
+        df.columns.foreach { column =>
+          val duplicatesCount: DataFrame = counters.countDuplicates(column, df)
+          writers.writeDfToMongo("duplicates_count", "append", duplicatesCount)
+
+          val nullsCount: Long = counters.countNullValues(column, df)
+          val nullsCountRdd: RDD[Document] = utils.convertToRddDocument("nulls_count", nullsCount: Long)
+
+          writers.writeRddToMongo(nullsCountRdd, column)
+
+          val mostCommonValue: DataFrame = counters.findMostCommonValue(column, df)
+          writers.writeDfToMongo("most_common_value", "append", mostCommonValue)
+        }
+      }
+    }
+
     //Should get from conf
     val readAndWriteData: Try[Unit] = for {
       aisDf: DataFrame <- readers.readCSV("/Users/colmginty/Downloads/aisdk_20190119.csv", cache = true)
@@ -48,25 +68,25 @@ object ETL {
         s"and/or generating summary data: $exception"); logger.error(exception)
     }
 
-    //I should build up the collection and save it all in one go
-    //I should get the params from conf
-    //There must be a (much) better way to do this
-    def iterateOverColumnsAndWrite(df: DataFrame): Try[Unit] = {
-      Try{
-        df.columns.take(1).foreach { column =>
-          val duplicatesCount: DataFrame = counters.countDuplicates(column, df)
-          writers.writeDfToMongo("duplicates_count", "append", duplicatesCount)
-
-          val nullsCount: Long = counters.countNullValues(column, df)
-          val nullsCountRdd: RDD[Document] = utils.convertToRddDocument("nulls_count", nullsCount: Long)
-
-          writers.writeRddToMongo(nullsCountRdd, column)
-
-          val mostCommonValue: DataFrame = counters.findMostCommonValue(column, df)
-          writers.writeDfToMongo("most_common_value", "append", mostCommonValue)
-        }
-      }
-    }
+//    //I should build up the collection and save it all in one go
+//    //I should get the params from conf
+//    //There must be a (much) better way to do this
+//    def iterateOverColumnsAndWrite(df: DataFrame): Try[Unit] = {
+//      Try{
+//        df.columns.take(1).foreach { column =>
+//          val duplicatesCount: DataFrame = counters.countDuplicates(column, df)
+//          writers.writeDfToMongo("duplicates_count", "append", duplicatesCount)
+//
+//          val nullsCount: Long = counters.countNullValues(column, df)
+//          val nullsCountRdd: RDD[Document] = utils.convertToRddDocument("nulls_count", nullsCount: Long)
+//
+//          writers.writeRddToMongo(nullsCountRdd, column)
+//
+//          val mostCommonValue: DataFrame = counters.findMostCommonValue(column, df)
+//          writers.writeDfToMongo("most_common_value", "append", mostCommonValue)
+//        }
+//      }
+//    }
   }
 
 }
